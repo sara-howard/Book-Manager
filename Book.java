@@ -3,11 +3,10 @@ import ecs100.*;
  * Book class stores and returns the information of a book
  *
  * @Sara 
- * @date 2023-10-05
  */
 public class Book {
     // instance variables 
-    private double id;
+    private long id;
     private String title;
     private String author;
     private int likes;
@@ -17,7 +16,7 @@ public class Book {
     /**
      * Constructor for objects of class Book
      */
-    public Book(double key, String bookTitle, String bookAuthor, int numLikes) {
+    public Book(long key, String bookTitle, String bookAuthor, int numLikes) {
         // initialise instance variables
         id = key;
         title = bookTitle;
