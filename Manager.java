@@ -1,78 +1,97 @@
 import ecs100.*;
 import java.util.HashMap;
 /**
- * Manager class runs the program and manages the library
- *
+ * Manager class runs the program and manages the library.
  * @Sara
  */
 public class Manager {
-    // instance variables 
+    // instance variables
     private HashMap<Long, Book> library; // declaring the hashmap
     private Book currentBook;
     private String findTitle;
-    
+
     // variables to use when adding a new book
     private long newId;
     private String newTitle;
     private String newAuthor;
     private int newLikes;
+    private String newCover;
     private String newString;
-    
+
     /**
-     * Constructor for objects of class Manager
+     * Constructor for objects of class Manager.
      */
     public Manager() {
         // initialise instance variables
         // setup starting library
-        library = new HashMap<Long, Book>();     // initialise hashmap
-        
+        library = new HashMap<Long, Book>();
+
         // add books to library
-        addBook(379853637, "The Wicked King", "Holly Black", 12);
-        addBook(216547438, "Harry Potter", "JK. Rowling", 36);
-        addBook(468390453, "1984", "George Orwell", 5);
+        addBook(379853637, "The Wicked King", "Holly Black", 12,
+        "wicked_king.png");
+        addBook(216547438, "Harry Potter", "JK. Rowling", 36,
+        "harry_potter.png");
+        addBook(468390453, "1984", "George Orwell", 5, "1984.png");
 
     }
-    
+
     /**
-     * Prompts user for book details
+     * Manage the book covers.
+     * 
+     */
+    public void manageCovers(final String action,
+    final double x, final double y) {
+        if (action.equals("released")) {
+            if (currentBook.onCover(x, y)) {
+                currentBook.editLikes(1);
+                UI.println("Likes increased by 1!");
+                printDetails();
+            }
+        }
+    }
+
+    /**
+     * Prompts user for book details.
      */
     public void getBookInfo() {
         newId = newId();
-    
+
         newTitle = newString("Title: ", "A book has to have a title!");
         newTitle = newString("Author: ", "A book has to have an author!");
         newLikes = UI.askInt("Likes: ");
-        
-        addBook(newId, newTitle, newAuthor, newLikes);
+
+        // add an image for book cover display in GUI
+        newCover = UIFileChooser.open("Choose Book Cover: ");
+
+        addBook(newId, newTitle, newAuthor, newLikes, newCover);
         UI.println(newTitle + " has been added to your library!");
     }
 
-    /*
-     * Force the user to enter a new string until != null
+    /**
+     * Force the user to enter a new string until != null.
+     * @return newString 
      */
-    public String newString(String prompt, String errorMessage) {
+    public String newString(String prompt, String nullMessage) {
         do {
             newString = UI.askString(prompt);
 
-            if (newString.isEmpty() == true) {
-                UI.println(errorMessage);
+            if (newString.isEmpty()) {
+                UI.println(nullMessage);
             }
-        } while (newString.isEmpty() == true);;
+        } while (newString.isEmpty());
         return newString;
     }
 
     /**
-     * Prompts user for a new ISBN
+     * Prompts user for a new ISBN.
      * @return newId
      */
     public long newId() {
-        do { 
+        do {
             try {
                 newId = Long.decode(UI.askString("ISBN: "));
-            }
-            
-            // If non number given (null or string)
-            catch (Exception NumberFormatException) {
+            } catch (Exception NumberFormatException) {
+                // If non number given (null or string)
                 newId = 0;
             }
 
@@ -87,23 +106,23 @@ public class Manager {
             }
 
         } while (newId <= 0); // Force input until positive number given
-        
+
         return newId;
     }
 
-    
     /**
-     * Adds a new book object to the library
+     * Adds a new book object to the library.
      */
-    public void addBook(long id, String title, String author, int likes) {
-        library.put(id, new Book(id, title, author, likes));
+    public void addBook(long id, String title, String author,
+    int likes, String cover) {
+        library.put(id, new Book(id, title, author, likes, cover));
     }
 
     /**
-     * Prompts user for book title
+     * Prompts user for book title.
      * Search for book in library
-     * If found, sets book to currentBook 
-     * @return if book found
+     * If found, sets book to currentBook.
+     * @return if book found (true/false)
      */
     public boolean checkBook() {
         findTitle = UI.askString("Enter the books title: ");
@@ -118,48 +137,61 @@ public class Manager {
     }
 
     /**
-     * If book is found, prints the book details
+     * If book found, prints the book details.
      * If not found, prints "Book not found"
      */
     public void findBook() {
         if (checkBook()) {
-            UI.println("Book found: " + currentBook.getTitle() + " "
-                        + currentBook.getAuthor() + " "
-                        + currentBook.getLikes());
-        } 
-        
-        else {
+            UI.println("Book found: ");
+            printDetails();
+            // Display book cover
+            currentBook.displayCover();
+        } else {
             UI.println("Book not found");
         }
     }
 
     /**
-     * Returns the current book
-     * @return currentBook
+     * Print book details with formatting.
      */
-    public Book getCurrentBook() {
-        return currentBook;
+    public void printDetails() {
+        UI.println("---------------------");
+            UI.println(currentBook.getTitle() + " by "
+                        + currentBook.getAuthor());
+            UI.println("- " + currentBook.getLikes() + " likes");
+            UI.println("---------------------");
     }
-    
+
     /**
-     * Prints all books in the library
+     * If book found, removes and prints "___ removed".
+     * If not found, prints "___ isn't in your library"
+     */
+    public void removeBook() {
+        if (checkBook()) {
+            library.remove(currentBook.getId());
+            UI.println(currentBook + " removed");
+        } else {
+            UI.println(currentBook + " isn't in your library");
+        }
+    }
+
+    /**
+     * Prints all books in the library.
      * Prints the title, author and number of likes of each book
      */
     public void printAll() {
         // Traverse library
         for (long bookId : library.keySet()) {
-            UI.println(bookId + " Details: ");
-            UI.println(library.get(bookId).getTitle() + " "
-                        + library.get(bookId).getAuthor() + " "
-                        + library.get(bookId).getLikes());
+            currentBook = library.get(bookId);
+            printDetails();
         }
     }
-    
+
     /**
-     * Main method to run the program
+     * Returns the current book.
+     * @return currentBook
      */
-    public static void main(String[] args) {
-        // Create a new instance of the Manager class to therefore run the program
-        new Screen();
-    } 
+    public Book getCurrentBook() {
+        return currentBook;
+    }
 }
